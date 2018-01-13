@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "504518996242",
+    "project_id": "notes-192008"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:504518996242:android:1a99f7bcc5d4421e",
+        "android_client_info": {
+          "package_name": "com.example.mohini.notes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "504518996242-b94f88r2d8s1en14gpk2i7ufn548nctq.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "504518996242-hkvr37tbv9079jh28vvebvu31oac2d6m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mohini.notes",
+            "certificate_hash": "64dda55ccdedc94b3da5a4cc8086ab098c0857ed"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAL-4dKCYQZKszFKc4uBFOcxVojUdYFUC8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
