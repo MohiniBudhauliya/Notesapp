@@ -4,13 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.mohini.notes.activities.LoginActivity">
+    android:background="@drawable/backimg01"
+    tools:context="com.example.mohini.notes.activities.activities.LoginActivity">
 
     <Button
         android:id="@+id/gmailsingin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Login"
-        android:layout_marginTop="300dp"/>
+        android:layout_width="290dp"
+        android:layout_height="40dp"
+        android:text="SignInWithGooglePlus"
+        android:textColor="#ffffff"
+        android:layout_marginLeft="45dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="370dp"
+        android:background="@drawable/getroundedgeforgmailbutton"
+        android:drawableLeft="@drawable/gplusicon"/>
 
 </RelativeLayout>
