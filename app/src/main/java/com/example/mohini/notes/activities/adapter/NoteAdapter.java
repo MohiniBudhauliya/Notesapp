@@ -1,11 +1,13 @@
 package com.example.mohini.notes.activities.adapter;
 
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -38,17 +40,10 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     //we are storing all the rides in a list
     public static ArrayList<String> noteList;
     public static  ArrayList<String> titleList;
-    public static String editNoteId, editNoteTitle, editNote,editNotePrioirty;
+    public static  ArrayList<String> tag;
+    public static String editNoteId, editNoteTitle, editNote,editNotetag;
     public static String priorityNoteId,priorityNote,priorityNoteTitle,priorityNotePriority;
-    AddNoteFragment Fragment = new AddNoteFragment();
-    //public static   String notes,title;
 
-
-    public NoteAdapter(Context context, ArrayList<String> noteList, ArrayList<String> titleList) {
-        this.context = context;
-        this.noteList = noteList;
-        this.titleList = titleList;
-    }
     public NoteAdapter(Context context, ArrayList<DataModel> dataModels) {
         this.context = context;
         this.dataModels = dataModels;
@@ -66,17 +61,22 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         //getting the ride of the specified position
-        String notes, title;
+        String notes, title,tag,color;
         DataModel note = dataModels.get(position);
         notes = note.getNote();
         title = note.getTitle();
-        if(note.getPriority().equals("Important"))
-           holder.cardView.setBackgroundResource(R.drawable.impcardview);//Color.parseColor("#ffac99")
-        if(note.getPriority().equals("Normal"))
-            holder.cardView.setBackgroundResource(R.drawable.normalcardview);//Color.parseColor("#803B444B")
+        tag=note.getTag();
+        color=note.getColor();
+        if(color==null)
+        {
+            holder.cardView.setBackgroundColor(Color.parseColor("#803B444B"));
+        }
+        else {
+            holder.cardView.setBackgroundColor(Color.parseColor(color));//setBackgroundResource(R.drawable.normalcardview);
+        }
         holder.writeNote.setText("Note: " + notes);
         holder.title.setText("Title: " + title);
-
+        holder.tag.setText(tag);
     }
 
     @Override
@@ -86,8 +86,8 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
-        public TextView writeNote, title;
-        public  CardView cardView;
+        public TextView writeNote, title,tag;
+        public static CardView cardView;
         int p;
         String deleteNoteId;
         Context context;
@@ -96,6 +96,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
             writeNote = (TextView) itemView.findViewById(R.id.writenote);
             title = (TextView) itemView.findViewById(R.id.title);
             cardView=(CardView)itemView.findViewById(R.id.cardview);
+            tag=(TextView)itemView.findViewById(R.id.tag);
             cardView.setRadius(12);
             context = itemView.getContext();
             itemView.setOnCreateContextMenuListener(this);
@@ -108,15 +109,15 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
             menu.setHeaderTitle("OPTIONS:");
             MenuItem editnote = menu.add(0, view.getId(), 0, "Edit Note");
             MenuItem remove = menu.add(0, view.getId(), 0, "Remove Note");//groupId, itemId, order, title
-            MenuItem imp = menu.add(0, view.getId(), 0, "Mark as Important").setIcon(R.drawable.star);
-            MenuItem normal = menu.add(0, view.getId(), 0, "Make it normal").setIcon(R.drawable.normalstar);
+//            MenuItem imp = menu.add(0, view.getId(), 0, "Mark as Important").setIcon(R.drawable.star);
+//            MenuItem normal = menu.add(0, view.getId(), 0, "Make it normal").setIcon(R.drawable.normalstar);
             MenuItem cancel = menu.add(0, view.getId(), 0, "Cancel");
 
             remove.setOnMenuItemClickListener(onEditMenu);
-            imp.setOnMenuItemClickListener(onEditMenu);
+            //imp.setOnMenuItemClickListener(onEditMenu);
             cancel.setOnMenuItemClickListener(onEditMenu);
             editnote.setOnMenuItemClickListener(onEditMenu);
-            normal.setOnMenuItemClickListener(onEditMenu);
+            //normal.setOnMenuItemClickListener(onEditMenu);
         }
 
         private  MenuItem.OnMenuItemClickListener onEditMenu = new MenuItem.OnMenuItemClickListener() {
@@ -129,35 +130,8 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
                     deleteNoteId = note.getId();
                     Notes.arraydata.remove(p);
                     AddNoteFragment.removeNote(deleteNoteId);
-                    //Notes.deletedNotes(deleteNoteId);
                     Intent intent = new Intent(context, Notes.class);
                     context.startActivity(intent);
-                }
-                else if (item.getTitle() == "Mark as Important") {
-                    p = getAdapterPosition();
-                    DataModel note = dataModels.get(p);
-                    priorityNoteId = note.getId();
-                    priorityNote = note.getNote();
-                    priorityNoteTitle = note.getTitle();
-                    note.setPriority("Important");
-                    priorityNotePriority="Important";
-                    AddNoteFragment.editNote(priorityNoteId,priorityNoteTitle,priorityNote,priorityNotePriority);
-                    Intent intent = new Intent(context, Notes.class);
-                    context.startActivity(intent);
-                    //cardView.setCardBackgroundColor(Color.parseColor("#ffac99"));
-                }
-                else if (item.getTitle() == "Make it normal") {
-                    p = getAdapterPosition();
-                    DataModel note = dataModels.get(p);
-                    priorityNoteId = note.getId();
-                    priorityNote = note.getNote();
-                    priorityNoteTitle = note.getTitle();
-                    note.setPriority("Normal");
-                    priorityNotePriority="Normal";
-                    AddNoteFragment.editNote(priorityNoteId,priorityNoteTitle,priorityNote,priorityNotePriority);
-                    Intent intent = new Intent(context, Notes.class);
-                    context.startActivity(intent);
-                    //cardView.setCardBackgroundColor(Color.parseColor("#ffac99"));
                 }
                 else if(item.getTitle()=="Edit Note")
                 {
@@ -166,8 +140,13 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
                     editNoteId = note.getId();
                     editNote = note.getNote();
                     editNoteTitle = note.getTitle();
-                    editNotePrioirty=note.getPriority();
-                    note.getId().replace(editNoteId,"xyz");
+                    editNotetag=note.getTag();
+                    String color=note.getColor();
+                    writeNote.setText(editNote);
+                    title.setText(editNoteTitle);
+                    tag.setText(editNotetag);
+                    Notes obj=new Notes();
+                    obj.showlayoutforaddingnote();
                     Toast.makeText(itemView.getContext(), "Edited", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(context, Notes.class);
                     context.startActivity(intent);

@@ -4,6 +4,7 @@ package com.example.mohini.notes.activities.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -12,6 +13,7 @@ import android.provider.ContactsContract;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -37,8 +39,10 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.mohini.notes.R;
 import com.example.mohini.notes.activities.adapter.NoteAdapter;
+import com.example.mohini.notes.activities.adapter.TagAdapter;
 import com.example.mohini.notes.activities.fragment.AddNoteFragment;
 import com.example.mohini.notes.activities.model.DataModel;
+import com.example.mohini.notes.activities.model.TagModel;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -51,27 +55,21 @@ public class Notes extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private ImageView userpic;
     private TextView userEmail, userName;
-    //public static Button newNote;
-    Context context;
     Bundle bundle = new Bundle();
     android.support.v4.app.FragmentManager manager = getSupportFragmentManager();    //Initializing Fragment Manager.
     AddNoteFragment Fragment = new AddNoteFragment();
     android.support.v4.app.FragmentTransaction transaction;
-    public static RecyclerView recyclerView;
+    public static RecyclerView recyclerView,tagRecyclerView;
     public static NoteAdapter adapter;
-    public static ArrayList<String> addNote = new ArrayList<>();
-    public static ArrayList<String> titleList = new ArrayList<>();
+    public static TagAdapter tagadapter;
     public static int i = 0;
     public static FirebaseDatabase database = FirebaseDatabase.getInstance();
     public static ArrayList<DataModel> arraydata=new ArrayList<>();
+    public static ArrayList<TagModel> tagData=new ArrayList<>();
     public static DatabaseReference rootreference,titlerefrence,noterefrence;
     public static String userId;
     public static ArrayList<String> keyStore=new ArrayList<>();
     public static FloatingActionButton fab;
-    // Write a message to the database
-//    FirebaseDatabase database = FirebaseDatabase.getInstance();
-//    DatabaseReference rootreference,titlerefrence,noterefrence;
-//    DataModel  datamodel;
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
@@ -79,9 +77,8 @@ public class Notes extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notes);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //newNote = (Button) findViewById(R.id.newNote);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        //newNote.setOnClickListener(this);
+        tagRecyclerView=(RecyclerView)findViewById(R.id.recyclerView);
         setSupportActionBar(toolbar);
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#339988")));
@@ -126,6 +123,17 @@ public class Notes extends AppCompatActivity
         recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
+        //tagRecyclerView.setHasFixedSize(true);
+        //tagRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        //recyclerView.setItemAnimator(new DefaultItemAnimator());
+        tagadapter = new TagAdapter(Notes.this,AddNoteFragment.taglist);
+        if(AddNoteFragment.taglist.size()==0)
+        {
+        }
+         else
+           {
+            tagRecyclerView.setAdapter(tagadapter);
+           }
         rootreference = database.getInstance().getReference("Your Note");
         // Creating new user node, which returns the unique key value
         userId = rootreference.push().getKey();
@@ -163,6 +171,14 @@ public class Notes extends AppCompatActivity
         } else {
             onStart();
         }
+    }
+    public void showlayoutforaddingnote()
+    {
+        //fab.setVisibility(View.INVISIBLE);
+        getSupportActionBar().setTitle("Add Note");
+        transaction = manager.beginTransaction();
+        transaction.replace(R.id.recyclerViewXML, Fragment).commit();
+        transaction.show(Fragment);
     }
 
     @Override
@@ -208,67 +224,14 @@ public class Notes extends AppCompatActivity
         } else if (id == R.id.ImporrtantNotes) {
             fab.setVisibility(View.INVISIBLE);
             getSupportActionBar().setTitle("Important Notes");
-            prioirtyNotes("Important");
+            //prioirtyNotes("Important");
 
-        } else if (id == R.id.Bin) {
-            fab.setVisibility(View.INVISIBLE);
-            getSupportActionBar().setTitle("Archive");
-            //deletedNotes(AddNoteFragment.keyStore.get(NoteAdapter.ViewHolder.p));
         }
-
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    public void prioirtyNotes(final String priority) {
-        rootreference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                arraydata.clear();
-                int i = 0;
-                for (DataSnapshot notesnapshot : dataSnapshot.getChildren()) {
-                    DataModel noteLists = notesnapshot.getValue(DataModel.class);
-                    if (noteLists.getPriority().equals(priority)) {
-                        arraydata.add(i, noteLists);
-                        i++;
-                    }
-                }
 
-                NoteAdapter adapter = new NoteAdapter(Notes.this, arraydata);
-                recyclerView.setAdapter(adapter);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-//    public static void deletedNotes(final String id) {
-//        rootreference.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                arraydata.clear();
-//                int i = 0;
-//                for (DataSnapshot notesnapshot : dataSnapshot.getChildren()) {
-//                    DataModel noteLists = notesnapshot.getValue(DataModel.class);
-//                    if (noteLists.getId().equals(id)) {
-//                        arraydata.add(i, noteLists);
-//                        i++;
-//                    }
-//                }
-//
-//                NoteAdapter adapter = new NoteAdapter(Notes.this, arraydata);
-//                recyclerView.setAdapter(adapter);
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-
-//    }
 }

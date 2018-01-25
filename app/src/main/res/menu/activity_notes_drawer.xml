@@ -12,11 +12,8 @@
         <item
             android:id="@+id/ImporrtantNotes"
             android:icon="@drawable/star"
-            android:title="Important Notes" />
-        <item
-            android:id="@+id/Bin"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Deleted" />
+            android:title="Imporrtant Notes" />
+
         <item
             android:id="@+id/logout"
             android:icon="@drawable/logout"

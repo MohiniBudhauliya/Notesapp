@@ -1,7 +1,9 @@
 {
   "project_info": {
     "project_number": "504518996242",
-    "project_id": "notes-192008"
+    "firebase_url": "https://notes-192008.firebaseio.com",
+    "project_id": "notes-192008",
+    "storage_bucket": "notes-192008.appspot.com"
   },
   "client": [
     {
@@ -12,6 +14,10 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "504518996242-jhiilc56r9a02kde8k1q510j88p9f3be.apps.googleusercontent.com",
+          "client_type": 3
+        },
         {
           "client_id": "504518996242-b94f88r2d8s1en14gpk2i7ufn548nctq.apps.googleusercontent.com",
           "client_type": 3

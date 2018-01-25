@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
+    android:id="@+id/addnoteframe"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:background="#87CEEB">
+
     <EditText
         android:id="@+id/noteTitle"
         android:layout_width="match_parent"
@@ -20,7 +22,16 @@
         android:layout_height="60dp"
         android:hint="Note:"
         android:layout_gravity="top"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="40dp"
+        android:textColor="#ffffff"
+        />
+    <EditText
+        android:id="@+id/entertag"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:hint="Tag:"
+        android:layout_gravity="top"
+        android:layout_marginTop="90dp"
         android:textColor="#ffffff"
         />
     <FrameLayout
@@ -52,6 +63,97 @@
             android:textColor="#ffffff"
             android:textStyle="italic"
             android:textSize="17dp"/>
+        <Button
+            android:id="@+id/editing"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="180dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="35dp"
+            android:text=""
+            android:background="@drawable/roundedgeforbutton"
+            android:textColor="#ffffff"
+            android:textStyle="italic"
+            android:textSize="17dp"/>
+
     </FrameLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/colormenu"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="360dp"
+        android:layout_marginBottom="100dp"
+        android:background="#008080	">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:paddingLeft="10dp"
+            android:layout_marginTop="8dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:text="COLOR:"
+                android:textStyle="italic"
+                android:textColor="#ffffff"/>
+            <Button
+                android:id="@+id/defaultcolor"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/circle"
+                android:backgroundTint="#803B444B"
+                android:layout_marginLeft="20dp"/>
+            <Button
+            android:id="@+id/color1"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/circle"
+            android:backgroundTint="#893F45"
+            android:layout_marginLeft="10dp"/>
+            <Button
+                android:id="@+id/color2"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/circle"
+                android:backgroundTint="#ffac99"
+                android:layout_marginLeft="10dp"/>
+            <Button
+                android:id="@+id/color3"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/circle"
+                android:backgroundTint="#87A96B"
+                android:layout_marginLeft="10dp"/>
+            <Button
+                android:id="@+id/color4"
+              android:layout_width="40dp"
+              android:layout_height="40dp"
+              android:background="@drawable/circle"
+              android:backgroundTint="#3D2B1F"
+              android:layout_marginLeft="10dp"/>
+            <Button
+                android:id="@+id/color5"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/circle"
+                android:backgroundTint="#004225"
+                android:layout_marginLeft="10dp"/>
+            <Button
+                android:id="@+id/color6"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/circle"
+                android:backgroundTint="#800020"
+                android:layout_marginLeft="10dp"/>
+            <Button
+                android:id="@+id/color7"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/circle"
+                android:backgroundTint="#614051"
+                android:layout_marginLeft="10dp"/>
+        </LinearLayout>
+    </HorizontalScrollView>
+
 
 </FrameLayout>

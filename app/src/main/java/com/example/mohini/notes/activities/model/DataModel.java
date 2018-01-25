@@ -6,22 +6,19 @@ package com.example.mohini.notes.activities.model;
 
 public class DataModel{
     String title,note;
-    String id,priority;
+    String id,tag,color;
     public DataModel()
     {
     }
-    public DataModel(String id, String title, String note,String priority) {
+    public DataModel(String id, String title, String note,String tag,String color) {
         this.title = title;
         this.note = note;
         this.id = id;
-        this.priority=priority;
+        this.tag=tag;
+        this.color=color;
     }
 
-    public DataModel(String title, String note) {
-        this.title = title;
-        this.note = note;
 
-    }
 
     public String getTitle() {
         return title;
@@ -46,11 +43,18 @@ public class DataModel{
         this.id = id;
     }
 
-    public String getPriority() {
-        return priority;
+    public String getTag() {
+        return tag;
     }
 
-    public void setPriority(String priority) {
-        this.priority = priority;
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }
