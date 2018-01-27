@@ -43,10 +43,10 @@ public class TagAdapter extends RecyclerView.Adapter<TagAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(TagAdapter.ViewHolder holder, int position) {
         //getting the ride of the specified position
-        String tag;
-        //String note = tagModels.get(position);
+        //String tag;
+        String tag = tagModels.get(position);
         //tag = note.getTag();
-        holder.tagtextview.setText(AddNoteFragment.taglist.get(position));
+        holder.tagtextview.setText(tag);
         holder.tagcardView.setBackgroundColor(Color.parseColor("#803B444B"));
     }
 

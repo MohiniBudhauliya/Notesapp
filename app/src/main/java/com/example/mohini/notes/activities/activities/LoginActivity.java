@@ -3,6 +3,7 @@ package com.example.mohini.notes.activities.activities;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -15,6 +16,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.mohini.notes.R;
+import com.example.mohini.notes.activities.interfaces.ApiInterface;
 import com.example.mohini.notes.activities.model.LoginUserDetails;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
@@ -33,6 +35,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener,GoogleApiClient.OnConnectionFailedListener {
 
@@ -42,12 +52,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private ProgressDialog mProgressDialog;
     private static final String TAG = LoginActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 007;
-    public static String name, email, pic;
+    public static String name, email, pic,serverToken;
     public DatabaseReference databaseUser;
-    //public static final String SCOPES = "https://www.googleapis.com/auth/plus.login "
-            //+ "https://www.googleapis.com/auth/drive.file";
-    public static final String SCOPES="504518996242-jhiilc56r9a02kde8k1q510j88p9f3be.apps.googleusercontent.com";
     public GoogleSignInAccount acct;
+    public static SharedPreferences pref;
+    public static Boolean login = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +83,19 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
+        //checks if user is already loggedin and perform suitable action.
+        try {
+            pref = getApplicationContext().getSharedPreferences("MyPref", 0);
+            if (pref.getBoolean("login", false) == true) {
+                signIn();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
+
+
 
     //Function for checking internet connection
     public boolean check_InternnetConnection() {
@@ -87,6 +108,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
         return connected;
     }
+
+
 
     //Function for signin with google account
     private void signIn() {
@@ -102,6 +125,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
+            mProgressDialog = ProgressDialog.show(this, "Signing in  " + email, "Signing in...");
             // Signed in successfully, show authenticated UI.
             acct = result.getSignInAccount();
             //Storing  basic information of logged in account in variables to send in another activity
@@ -109,13 +133,79 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             email = acct.getEmail();
             pic = acct.getPhotoUrl().toString();
             String token= acct.getIdToken();
-            Toast.makeText(getApplicationContext(), "You have successfully logged in", Toast.LENGTH_SHORT).show();
-            //sending intent to another class
-            Intent intent = new Intent(LoginActivity.this, Notes.class);
-            mProgressDialog = ProgressDialog.show(this, "Signing in  " + email, "Signing in...");
-            addUser();
-            startActivity(intent);
+            //putting data in SharedPreferences.
+            pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
+            SharedPreferences.Editor editor = pref.edit();
+            login = true;
+            editor.putBoolean("login", login);
+            editor.commit();
+
+
+
+            //HttpCLient to Add Authorization Header.
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(60, TimeUnit.SECONDS)
+                    .connectTimeout(60, TimeUnit.SECONDS).build();
+
+            //Retrofit to retrieve JSON data from server.
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(ApiInterface.BASE_URL)
+                    .client(client)
+                    .addConverterFactory(GsonConverterFactory.create())     //Using GSON to Convert JSON into POJO.
+                    .build();
+            ApiInterface apiService = retrofit.create(ApiInterface.class);
+            try {
+                LoginUserDetails user = new LoginUserDetails(email,token);
+                user.setEmail(email);
+                user.setToken(token);
+                apiService.loginUser(user).enqueue(new Callback<LoginUserDetails>() {
+                    @Override
+                    public void onResponse(Call<LoginUserDetails> call, Response<LoginUserDetails> response) {
+                        mProgressDialog.dismiss();
+                        if (response.isSuccessful()) {
+                            Log.i("here:", "post submitted to API." + response.body().toString());
+                            LoginUserDetails user =response.body();
+                            serverToken=user.getToken();
+                            Log.i("token : ",user.getToken());
+                            Toast.makeText(getApplicationContext(), "Login Successful..!! ", Toast.LENGTH_SHORT).show();
+                            Intent main = new Intent(LoginActivity.this, LoginActivity.class);
+                            startActivity(main);
+                            finish();
+                        } else if (response.code() == 200) {
+                            Toast.makeText(getApplicationContext(), "Login Successful.. ", Toast.LENGTH_SHORT).show();
+                            Intent main = new Intent(LoginActivity.this, LoginActivity.class);
+                            startActivity(main);
+                            finish();
+                        } else if (response.code() == 500) {
+                            Toast.makeText(getApplicationContext(), "Some Error occured(Iternal ", Toast.LENGTH_SHORT).show();
+                        } else if (response.code() == 404) {
+                            Toast.makeText(getApplicationContext(), "Wrong Email or Password..", Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+                    @Override
+                    public void onFailure(Call<LoginUserDetails> call, Throwable t) {
+                        t.printStackTrace();
+                        mProgressDialog.dismiss();
+                        Log.e("here", "Unable to submit post to API.");
+                        Toast.makeText(getApplicationContext(), "Login failed ", Toast.LENGTH_SHORT).show();
+
+                    }
+
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+
+ //         Toast.makeText(getApplicationContext(), "You have successfully logged in", Toast.LENGTH_SHORT).show();
+            //sending intent to another class
+//            Intent intent = new Intent(LoginActivity.this, Notes.class);
+//            mProgressDialog = ProgressDialog.show(this, "Signing in  " + email, "Signing in...");
+//            addUser();
+//            startActivity(intent);
+
     }
 
     //Function for signOut with google account
@@ -134,6 +224,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     boolean connected = false;
+
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

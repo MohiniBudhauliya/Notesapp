@@ -1,19 +1,37 @@
 package com.example.mohini.notes.activities.model;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by mohini on 15/1/18.
  */
 
 public class DataModel{
-    String title,note;
-    String id,tag,color;
+    //String title,note;
+    //String id,tag,color;
+    @SerializedName("emails")
+    @Expose
+    String email;
+    @SerializedName("title")
+    @Expose
+    String title;
+    @SerializedName("note")
+    @Expose
+    String note;
+    @SerializedName("color")
+    @Expose
+    String color;
+    @SerializedName("tag")
+    @Expose
+    String tag;
     public DataModel()
     {
     }
-    public DataModel(String id, String title, String note,String tag,String color) {
+    public DataModel(String email, String title, String note, String color, String tag) {
         this.title = title;
         this.note = note;
-        this.id = id;
+        this.email = email;
         this.tag=tag;
         this.color=color;
     }
@@ -35,12 +53,12 @@ public class DataModel{
     public void setNote(String note) {
         this.note = note;
     }
-    public String getId() {
-        return id;
+    public String getEmail() {
+        return email;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getTag() {

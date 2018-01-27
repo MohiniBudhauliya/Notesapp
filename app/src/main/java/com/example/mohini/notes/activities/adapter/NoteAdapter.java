@@ -38,11 +38,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     public static ArrayList<DataModel> dataModels;
 
     //we are storing all the rides in a list
-    public static ArrayList<String> noteList;
-    public static  ArrayList<String> titleList;
-    public static  ArrayList<String> tag;
     public static String editNoteId, editNoteTitle, editNote,editNotetag;
-    public static String priorityNoteId,priorityNote,priorityNoteTitle,priorityNotePriority;
 
     public NoteAdapter(Context context, ArrayList<DataModel> dataModels) {
         this.context = context;
@@ -81,7 +77,6 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        //return noteList.size();
         return dataModels.size();
     }
 
@@ -127,29 +122,24 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
                 if (item.getTitle() == "Remove Note") {
                     p = getAdapterPosition();
                     DataModel note = dataModels.get(p);
-                    deleteNoteId = note.getId();
+                   // deleteNoteId = note.getId();
                     Notes.arraydata.remove(p);
-                    AddNoteFragment.removeNote(deleteNoteId);
+                   // AddNoteFragment.removeNote(deleteNoteId);
                     Intent intent = new Intent(context, Notes.class);
                     context.startActivity(intent);
                 }
                 else if(item.getTitle()=="Edit Note")
                 {
-                    p = getLayoutPosition();
-                    DataModel note = dataModels.get(p);
-                    editNoteId = note.getId();
-                    editNote = note.getNote();
-                    editNoteTitle = note.getTitle();
-                    editNotetag=note.getTag();
-                    String color=note.getColor();
-                    writeNote.setText(editNote);
-                    title.setText(editNoteTitle);
-                    tag.setText(editNotetag);
-                    Notes obj=new Notes();
-                    obj.showlayoutforaddingnote();
-                    Toast.makeText(itemView.getContext(), "Edited", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(context, Notes.class);
-                    context.startActivity(intent);
+//                    p = getLayoutPosition();
+//                    DataModel note = dataModels.get(p);
+//                    editNoteId = note.getId();
+//                    editNote = note.getNote();
+//                    editNoteTitle = note.getTitle();
+//                    editNotetag=note.getTag();
+//                    String color=note.getColor();
+//                    //Toast.makeText(itemView.getContext(), "Edited", Toast.LENGTH_SHORT).show();
+//                    Intent intent = new Intent(context, Notes.class);
+//                    context.startActivity(intent);
                 }
 
                 else if (item.getTitle() == "Cancel") {

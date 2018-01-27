@@ -11,7 +11,7 @@
     <android.support.v7.widget.CardView
         android:id="@+id/tagcardview"
         android:layout_width="100dp"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:layout_marginRight="200dp"
         android:layout_marginBottom="5dp"
         android:backgroundTint="#000000">

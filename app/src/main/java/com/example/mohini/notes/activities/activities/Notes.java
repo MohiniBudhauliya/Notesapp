@@ -41,6 +41,7 @@ import com.example.mohini.notes.R;
 import com.example.mohini.notes.activities.adapter.NoteAdapter;
 import com.example.mohini.notes.activities.adapter.TagAdapter;
 import com.example.mohini.notes.activities.fragment.AddNoteFragment;
+import com.example.mohini.notes.activities.interfaces.ApiInterface;
 import com.example.mohini.notes.activities.model.DataModel;
 import com.example.mohini.notes.activities.model.TagModel;
 import com.google.firebase.database.DataSnapshot;
@@ -49,27 +50,43 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+import static com.example.mohini.notes.activities.activities.LoginActivity.email;
+import static com.example.mohini.notes.activities.activities.LoginActivity.serverToken;
 
 public class Notes extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private ImageView userpic;
     private TextView userEmail, userName;
     Bundle bundle = new Bundle();
-    android.support.v4.app.FragmentManager manager = getSupportFragmentManager();    //Initializing Fragment Manager.
-    AddNoteFragment Fragment = new AddNoteFragment();
-    android.support.v4.app.FragmentTransaction transaction;
+    public android.support.v4.app.FragmentManager manager = getSupportFragmentManager();    //Initializing Fragment Manager.
+    public  AddNoteFragment Fragment = new AddNoteFragment();
+    public  android.support.v4.app.FragmentTransaction transaction;
     public static RecyclerView recyclerView,tagRecyclerView;
     public static NoteAdapter adapter;
-    public static TagAdapter tagadapter;
     public static int i = 0;
     public static FirebaseDatabase database = FirebaseDatabase.getInstance();
     public static ArrayList<DataModel> arraydata=new ArrayList<>();
-    public static ArrayList<TagModel> tagData=new ArrayList<>();
+    public static ArrayList<String> tagData=new ArrayList<>();
     public static DatabaseReference rootreference,titlerefrence,noterefrence;
     public static String userId;
     public static ArrayList<String> keyStore=new ArrayList<>();
     public static FloatingActionButton fab;
+    Retrofit retrofit;
+    OkHttpClient defaultHttpClient;
+    ArrayList<DataModel> notes = new ArrayList<>();
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
@@ -98,6 +115,8 @@ public class Notes extends AppCompatActivity
             }
         });
 
+
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -112,7 +131,7 @@ public class Notes extends AppCompatActivity
         userEmail = (TextView) header.findViewById(R.id.userEmail);
         userName = (TextView) header.findViewById(R.id.userName);
         userName.setText(LoginActivity.name);
-        userEmail.setText(LoginActivity.email);
+        userEmail.setText(email);
         Glide.with(getApplicationContext()).load(LoginActivity.pic)
                 .thumbnail(0.5f)
                 .crossFade()
@@ -123,44 +142,68 @@ public class Notes extends AppCompatActivity
         recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        //tagRecyclerView.setHasFixedSize(true);
-        //tagRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-        //recyclerView.setItemAnimator(new DefaultItemAnimator());
-        tagadapter = new TagAdapter(Notes.this,AddNoteFragment.taglist);
-        if(AddNoteFragment.taglist.size()==0)
-        {
-        }
-         else
-           {
-            tagRecyclerView.setAdapter(tagadapter);
-           }
-        rootreference = database.getInstance().getReference("Your Note");
-        // Creating new user node, which returns the unique key value
-        userId = rootreference.push().getKey();
-        keyStore.add(i,userId);
-    }
+        //HttpCLient to Add Authorization Header.
+        defaultHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(
+                        new Interceptor() {
+                            @Override
+                            public okhttp3.Response intercept(Chain chain) throws IOException {
+                                Request request = chain.request().newBuilder()
+                                        .addHeader("authorization", "bearer " + serverToken).build();
+                                return chain.proceed(request);
+                            }
+                        }).build();
+        //Retrofit to retrieve JSON data from server.
+        retrofit = new Retrofit.Builder()
+                .baseUrl(ApiInterface.BASE_URL)
+                .client(defaultHttpClient)
+                .addConverterFactory(GsonConverterFactory.create())     //Using GSON to Convert JSON into POJO.
+                .build();
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        //Initialize a new instance of RecyclerView Adapter instance.
-        rootreference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                arraydata.clear();
-                for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()) {
-                    arraydata.add(dataSnapshot1.getValue(DataModel.class));
-                    adapter=new NoteAdapter(Notes.this,arraydata);
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        try {
+            final DataModel noteData = new DataModel(email, "title", "note", "color", "tag");
+            apiService.notes(noteData).enqueue(new Callback<List<DataModel>>() {
+                //        apiService.savePost(username, password, phone).enqueue(new Callback<User>() {
+                @Override
+                public void onResponse(Call<List<DataModel>> call, Response<List<DataModel>> response) {
+                    if (response.isSuccessful()) {
+                        List<DataModel> dataModelList = response.body();
+                        for (DataModel dataModel : dataModelList) {
+                            notes.add(dataModel);
+                        }
+
+                        StaggeredGridLayoutManager staggeredGridLayoutManager;
+                        staggeredGridLayoutManager = new StaggeredGridLayoutManager(2,
+                                StaggeredGridLayoutManager.VERTICAL);
+                        recyclerView.setHasFixedSize(true);   //If the RecyclerView knows in advance that its size doesn't depend on the adapter content, then it will skip checking if its size should change every time an item is added or removed from the adapter.
+                        recyclerView.setLayoutManager(staggeredGridLayoutManager);  //Displays recycler view in fragment.
+
+                        adapter = new NoteAdapter(Notes.this, notes);
+                       //registerForContextMenu(recyclerView);
+                        recyclerView.setAdapter(adapter);
+
+                        Toast.makeText(getApplicationContext(), "Notes..!! ", Toast.LENGTH_SHORT).show();
+
+                    } else if (response.code() == 500) {
+                        Toast.makeText(getApplicationContext(), "Some Error occured(Iternal ", Toast.LENGTH_SHORT).show();
+                    } else if (response.code() == 404) {
+                        Toast.makeText(getApplicationContext(), "wrong..", Toast.LENGTH_SHORT).show();
+                    }
+
                 }
 
-                recyclerView.setAdapter(adapter);
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(Notes.this,"Something went wrong on firebase",Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onFailure(Call<List<DataModel>> call, Throwable t) {
+                    t.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "failed ", Toast.LENGTH_SHORT).show();
 
+                }
+
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -172,14 +215,7 @@ public class Notes extends AppCompatActivity
             onStart();
         }
     }
-    public void showlayoutforaddingnote()
-    {
-        //fab.setVisibility(View.INVISIBLE);
-        getSupportActionBar().setTitle("Add Note");
-        transaction = manager.beginTransaction();
-        transaction.replace(R.id.recyclerViewXML, Fragment).commit();
-        transaction.show(Fragment);
-    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

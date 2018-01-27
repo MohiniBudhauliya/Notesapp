@@ -16,12 +16,27 @@ import android.widget.HorizontalScrollView;
 import android.widget.Toast;
 
 import com.example.mohini.notes.R;
+import com.example.mohini.notes.activities.activities.LoginActivity;
 import com.example.mohini.notes.activities.activities.Notes;
+import com.example.mohini.notes.activities.interfaces.ApiInterface;
 import com.example.mohini.notes.activities.model.DataModel;
 import com.example.mohini.notes.activities.model.TagModel;
 import com.google.firebase.database.DatabaseReference;
 
+import java.io.IOException;
 import java.util.ArrayList;
+
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+import static com.example.mohini.notes.activities.activities.LoginActivity.email;
+import static com.example.mohini.notes.activities.activities.LoginActivity.serverToken;
 
 /**
  * Created by mohini on 15/1/18.
@@ -37,12 +52,7 @@ public class AddNoteFragment extends Fragment implements View.OnClickListener {
     FrameLayout addNoteFrameLyout;
     //Button for color
     Button color1,color2,color3,color4,color5,color6,color7,defaultcolor;
-    public static DatabaseReference rootreference,titlerefrence,noterefrence,tagrefrence;
-    public static String userId,changecolor;
-    DataModel dataModel;
-    TagModel tagModel;
-    public static ArrayList<String> keyStore=new ArrayList<>();
-    int i=0;
+    public static String changecolor;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -50,34 +60,6 @@ public class AddNoteFragment extends Fragment implements View.OnClickListener {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.addnotefragment, container, false);
     }
-    public void addNote()
-    {
-        //Notes.rootreference = Notes.database.getInstance().getReference("Your Note");
-        //Creating new user node, which returns the unique key value
-        userId = Notes.userId;
-        keyStore.add(i,Notes.userId);
-        titlerefrence=Notes.rootreference.child("Title");
-        noterefrence=Notes.rootreference.child("Note");
-        tagrefrence=Notes.rootreference.child("TAG");
-        dataModel=new DataModel(userId,title,notes,tag,changecolor);
-        taglist.add(i,tag);
-        tagModel=new TagModel(tag);
-        Notes.rootreference.child(Notes.userId).setValue(dataModel);
-        i++;
-    }
-    public  void editNote(String editId, String editNoteTitle, String editNote,String tag,String coloroption)
-    {
-        DataModel noteList = new DataModel(editId, editNoteTitle, editNote,tag,coloroption);
-
-        Notes.rootreference.child(editId).setValue(noteList);
-    }
-
-
-    public static void removeNote(final String deleteNoteId)
-    {
-        Notes.rootreference.child(deleteNoteId).removeValue();
-    }
-
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -114,6 +96,65 @@ public class AddNoteFragment extends Fragment implements View.OnClickListener {
         color7.setOnClickListener(this);
         defaultcolor.setOnClickListener(this);
     }
+
+
+       //adds note in the Firebase realtime database.
+       public void addNote(String email, String title, String note, String color, String tag) {
+
+
+        //HttpCLient to Add Authorization Header.
+        OkHttpClient defaultHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(
+                        new Interceptor() {
+                            @Override
+                            public okhttp3.Response intercept(Chain chain) throws IOException {
+                                Request request = chain.request().newBuilder()
+                                        .addHeader("authorization", "bearer " + serverToken).build();
+                                return chain.proceed(request);
+                            }
+                        }).build();
+        //Retrofit to retrieve JSON data from server.
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(ApiInterface.BASE_URL)
+                .client(defaultHttpClient)
+                .addConverterFactory(GsonConverterFactory.create())     //Using GSON to Convert JSON into POJO.
+                .build();
+
+        ApiInterface apiService = retrofit.create(ApiInterface.class);
+        try {
+            DataModel noteList = new DataModel(email, title, note, color, tag);
+            apiService.addNote(noteList).enqueue(new Callback<DataModel>() {
+                //        apiService.savePost(username, password, phone).enqueue(new Callback<User>() {
+                @Override
+                public void onResponse(Call<DataModel> call, Response<DataModel> response) {
+                    if (response.isSuccessful()) {
+                        DataModel dataModel = response.body();
+                        Intent intent = new Intent(getActivity(), LoginActivity.class);
+                        startActivity(intent);
+                        //getActivity().overridePendingTransition(R.anim.slide_in, R.anim.slide_out);
+                        Toast.makeText(getActivity(), "Notes..!! ", Toast.LENGTH_SHORT).show();
+
+                    } else if (response.code() == 500) {
+                        Toast.makeText(getActivity(), "Some Error occured", Toast.LENGTH_SHORT).show();
+                    } else if (response.code() == 404) {
+                        Toast.makeText(getActivity(), "wrong..", Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+
+                @Override
+                public void onFailure(Call<DataModel> call, Throwable t) {
+                    t.printStackTrace();
+                    Toast.makeText(getActivity(), "failed ", Toast.LENGTH_SHORT).show();
+
+                }
+
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     //on Click method to perform action according to the button being clicked.
     int count=0;
     @Override
@@ -131,9 +172,10 @@ public class AddNoteFragment extends Fragment implements View.OnClickListener {
                     Toast.makeText(getActivity(), "Title Empty", Toast.LENGTH_SHORT).show();
                 } else {
                     Intent intent = new Intent(getActivity(), Notes.class);
-                    addNote();
+                    addNote(email, title, notes, changecolor, tag);
                     Toast.makeText(getActivity(), "Note added successfully", Toast.LENGTH_SHORT).show();
                     startActivity(intent);
+                    //getActivity().overridePendingTransition(R.anim.slide_in, R.anim.slide_out);
                 }
                 break;
             }
