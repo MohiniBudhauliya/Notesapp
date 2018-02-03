@@ -8,11 +8,11 @@
         <item
             android:id="@+id/Home"
             android:icon="@drawable/home"
-            android:title="Home" />
+            android:title="My Notes" />
         <item
-            android:id="@+id/ImporrtantNotes"
+            android:id="@+id/sharedNotes"
             android:icon="@drawable/star"
-            android:title="Imporrtant Notes" />
+            android:title="Shared Notes" />
 
         <item
             android:id="@+id/logout"

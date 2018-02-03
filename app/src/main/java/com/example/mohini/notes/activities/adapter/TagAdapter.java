@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,11 +12,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.mohini.notes.R;
-import com.example.mohini.notes.activities.fragment.AddNoteFragment;
-import com.example.mohini.notes.activities.model.DataModel;
-import com.example.mohini.notes.activities.model.TagModel;
+import com.example.mohini.notes.activities.model.NoteModel;
 
 import java.util.ArrayList;
+
+import static com.example.mohini.notes.activities.activities.Notes.adapter;
+import static com.example.mohini.notes.activities.activities.Notes.notes;
+import static com.example.mohini.notes.activities.activities.Notes.recyclerView;
 
 /**
  * Created by mohini on 24/1/18.
@@ -23,8 +26,10 @@ import java.util.ArrayList;
 
 public class TagAdapter extends RecyclerView.Adapter<TagAdapter.ViewHolder> {
     Context context;
-    //public static ArrayList<TagModel> tagModels;
     public static ArrayList<String> tagModels;
+    public static ArrayList<NoteModel> noteTags = new ArrayList<>();
+
+    public static String getNoteByTag = null;
 
     public TagAdapter(Context context, ArrayList<String> tagModels) {
         this.context=context;
@@ -66,7 +71,28 @@ public class TagAdapter extends RecyclerView.Adapter<TagAdapter.ViewHolder> {
             tagtextview = (TextView) itemView.findViewById(R.id.tagtextview);
             tagcardView.setRadius(12);
             context = itemView.getContext();
-            itemView.setOnCreateContextMenuListener(this);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int p = getLayoutPosition();
+                    getNoteByTag = tagModels.get(p);
+                    noteTags.clear();
+                    for (NoteModel n : notes) {
+                        if (n.getTag().equals(getNoteByTag)) {
+                            noteTags.add(n);
+                        }
+                    }
+                    StaggeredGridLayoutManager staggeredGridLayoutManager;
+                    staggeredGridLayoutManager = new StaggeredGridLayoutManager(2,
+                            StaggeredGridLayoutManager.VERTICAL);
+                    recyclerView.setHasFixedSize(true);   //If the RecyclerView knows in advance that its size doesn't depend on the adapter content, then it will skip checking if its size should change every time an item is added or removed from the adapter.
+                    recyclerView.setLayoutManager(staggeredGridLayoutManager);  //Displays recycler view in fragment.
+
+                    adapter = new NoteAdapter(context, noteTags);
+                    recyclerView.setAdapter(adapter);
+
+                }
+            });
 
         }
 

@@ -7,9 +7,8 @@ import com.google.gson.annotations.SerializedName;
  * Created by mohini on 15/1/18.
  */
 
-public class DataModel{
-    //String title,note;
-    //String id,tag,color;
+public class NoteModel {
+    //model class to send details of notes to server
     @SerializedName("emails")
     @Expose
     String email;
@@ -25,19 +24,41 @@ public class DataModel{
     @SerializedName("tag")
     @Expose
     String tag;
-    public DataModel()
+    @SerializedName("id")
+    @Expose
+    String id;
+    public NoteModel()
     {
     }
-    public DataModel(String email, String title, String note, String color, String tag) {
+    public NoteModel(String id,String email, String title, String note, String color, String tag) {
         this.title = title;
         this.note = note;
         this.email = email;
         this.tag=tag;
         this.color=color;
+        this.id=id;
     }
 
+    public NoteModel(String email, String note) {
+        this.note = note;
+        this.email = email;
+    }
+//    public NoteModel(String id,String note, String title,String tag, String color) {
+//        this.id=id;
+//        this.note=note;
+//        this.color=color;
+//        this.tag=tag;
+//        this.title=title;
+//    }
 
-
+public String getId()
+{
+    return id;
+}
+public void setId(String id)
+{
+    this.id=id;
+}
     public String getTitle() {
         return title;
     }
