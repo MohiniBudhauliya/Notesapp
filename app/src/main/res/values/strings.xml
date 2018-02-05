@@ -8,4 +8,14 @@
     <string name="action_settings">Settings</string>
     <string name="EmailOK">OK</string>
     <string name="EmailCancel">Cancel</string>
+    <string name="LoginMessage">Login Successful</string>
+    <string name="ServerError">Something went wrong with server</string>
+    <string name="RequestNotFound">Request not found</string>
+    <string name="Unpin">Unpin from top</string>
+    <string name="EditNote">Edit Note</string>
+    <string name="RemoveNote">Remove Note</string>
+    <string name="ShareNote">Share Note</string>
+    <string name="cancel">Cancel</string>
+    <string name="PintoTop">Pin to top</string>
+
 </resources>

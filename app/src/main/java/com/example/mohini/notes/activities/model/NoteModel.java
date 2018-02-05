@@ -1,29 +1,40 @@
 package com.example.mohini.notes.activities.model;
 
+import com.example.mohini.notes.activities.database.Appdatabase;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
 
 /**
  * Created by mohini on 15/1/18.
  */
-
+@Table(database = Appdatabase.class)
 public class NoteModel {
     //model class to send details of notes to server
+    @Column
     @SerializedName("emails")
     @Expose
     String email;
+    @Column
     @SerializedName("title")
     @Expose
     String title;
+    @Column
     @SerializedName("note")
     @Expose
     String note;
+    @Column
     @SerializedName("color")
     @Expose
     String color;
+    @Column
     @SerializedName("tag")
     @Expose
     String tag;
+    @Column
+    @PrimaryKey
     @SerializedName("id")
     @Expose
     String id;

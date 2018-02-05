@@ -60,4 +60,7 @@ public interface ApiInterface {
     //deletes Sharednote from server.
     @POST("note/shared/delete")
     Call<JsonObject> deleteSharedNote(@Body SharedNotes body);
+
+    @POST("user/updatetoken")
+    Call<LoginUserDetails> updateFcmToken(@Body LoginUserDetails body);
 }

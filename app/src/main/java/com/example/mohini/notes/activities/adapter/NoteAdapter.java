@@ -67,7 +67,6 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     public static SharedPreferences pinned;
     //we are storing all the rides in a list
     public static String editNoteid, editNoteTitle, editNote,editNotetag,editNoteColor,pinnedNotes, pinnedNoteTag, pinnedNoteTitle, pinnedNoteColor;
-    public  static int pinnednotenumber;
     public NoteAdapter(Context context, ArrayList<NoteModel> noteModels) {
         this.context = context;
         this.noteModels = noteModels;
@@ -91,6 +90,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         title = note.getTitle();
         tag=note.getTag();
         color=note.getColor();
+        holder.itemView.setTag(false);
         if(color==null)
         {
             holder.cardView.setBackgroundColor(Color.parseColor("#803B444B"));
@@ -130,7 +130,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
             menu.setHeaderTitle("OPTIONS:");
             if(isShared==1)
             {
-                editnote = menu.add(0, view.getId(), 0, "Edit Note");
+                editnote = menu.add(0, view.getId(), 0, "EditNote");
                 remove = menu.add(0, view.getId(), 0, "Remove Note");
                 cancel = menu.add(0, view.getId(), 0, "Cancel");
                 remove.setOnMenuItemClickListener(onEditMenu);
@@ -141,8 +141,8 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
                 MenuItem editnote = menu.add(0, view.getId(), 0, "Edit Note");
                 pintotop = menu.add(0, view.getId(), 0, "Pin to top");
                 MenuItem remove = menu.add(0, view.getId(), 0, "Remove Note");
-                MenuItem share = menu.add(0, view.getId(), 0, "Share");
-                 cancel = menu.add(0, view.getId(), 0, "Cancel");
+                MenuItem share = menu.add(0, view.getId(), 0, "Share Note");
+                cancel = menu.add(0, view.getId(), 0, "Cancel");
                 remove.setOnMenuItemClickListener(onEditMenu);
                 pintotop.setOnMenuItemClickListener(onEditMenu);
                 cancel.setOnMenuItemClickListener(onEditMenu);
@@ -156,7 +156,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
             @Override
             public boolean onMenuItemClick( MenuItem item) {
 
-                if (item.getTitle() == "Remove Note") {
+                if (item.getTitle()=="Remove Note") {
                     p = getLayoutPosition();
                     //check if note is sharednote or normal note and performs suitable function.
                     if (isShared == 1) {
@@ -216,8 +216,6 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
                                         tagRecyclerView.setLayoutManager(tagStaggeredGridLayoutManager);  //Displays recycler view in fragment.
                                         TagAdapter tagAdapter = new TagAdapter(context, tagList);
                                         tagRecyclerView.setAdapter(tagAdapter);
-//                                    Intent intent=new Intent(context,Notes.class);
-//                                    context.startActivity(intent);
                                         Toast.makeText(itemView.getContext(), "Deleted", Toast.LENGTH_SHORT).show();
                                     } else if (response.code() == 500) {
                                         Toast.makeText(itemView.getContext(), "Some Error occured", Toast.LENGTH_SHORT).show();
@@ -237,7 +235,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
                         }
                     }
                 }
-                else if(item.getTitle()=="Share"){
+                else if(item.getTitle()=="Share Note"){
                     p = getLayoutPosition();
                     final NoteModel note = noteModels.get(p);
                     //creating alert dialog with text input to take email id of recipient.
@@ -250,7 +248,6 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
                     final EditText input = (EditText) viewInflated.findViewById(R.id.input);
                     // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
                     builder.setView(viewInflated);
-
                     // Set up the buttons
                     //in case ok is pressed.
                     builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -258,9 +255,14 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                             String reciever_email = input.getText().toString();
-                            //shares note with the recipent.
-                            shareNote(email, reciever_email, note.getTitle(), note.getNote(), note.getColor(), note.getTag(), FirebaseInstanceId.getInstance().getToken());
+                            String[] recieverList = reciever_email.split(" ");
+
+                            for (int i = 0; i < recieverList.length; i++) {
+                            shareNote(email, recieverList[i], note.getTitle(), note.getNote(), note.getColor(), note.getTag(), FirebaseInstanceId.getInstance().getToken());
+                            }
+
                         }
+
                     });
                     //else cancel the dialog without any action.
                     builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -336,7 +338,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
                     }
                 }
 
-                else if (item.getTitle() == "Cancel") {
+                else if (item.getTitle()=="Cancel") {
 
                     return false;
                 }
@@ -415,7 +417,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
                         } else if (response.code() == 500) {
                             Toast.makeText(itemView.getContext(), "Some Error occured(Iternal ", Toast.LENGTH_SHORT).show();
                         } else if (response.code() == 404) {
-                            Toast.makeText(itemView.getContext(), "wrong..", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(itemView.getContext(), "Email id not found", Toast.LENGTH_SHORT).show();
                         }
 
                     }

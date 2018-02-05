@@ -10,9 +10,10 @@
 
         <AutoCompleteTextView
             android:id="@+id/input"
-            android:layout_width="match_parent"
+            android:layout_width="350dp"
             android:layout_height="wrap_content"
             android:hint="Enter email:"
+            android:maxLines="1"
             android:imeOptions="actionDone"
             android:inputType="text"
             android:textColor="#ffffff"/>

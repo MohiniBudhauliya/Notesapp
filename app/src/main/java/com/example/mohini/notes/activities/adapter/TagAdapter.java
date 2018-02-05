@@ -64,23 +64,43 @@ public class TagAdapter extends RecyclerView.Adapter<TagAdapter.ViewHolder> {
         public TextView  tagtextview;
         public static CardView tagcardView;
         Context context;
-
+        int count=0;
         public ViewHolder(final View itemView) {
             super(itemView);
             tagcardView = (CardView) itemView.findViewById(R.id.tagcardview);
             tagtextview = (TextView) itemView.findViewById(R.id.tagtextview);
             tagcardView.setRadius(12);
             context = itemView.getContext();
+            noteTags.clear();
+
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    int p = getLayoutPosition();
-                    getNoteByTag = tagModels.get(p);
-                    noteTags.clear();
-                    for (NoteModel n : notes) {
-                        if (n.getTag().equals(getNoteByTag)) {
-                            noteTags.add(n);
+
+                    if(count==0) {
+                        int p = getLayoutPosition();
+                        count++;
+                        itemView.setBackgroundColor(Color.parseColor("#0f5455"));
+                        getNoteByTag = tagModels.get(p);
+                        for (NoteModel n : notes) {
+                            if (n.getTag().equals(getNoteByTag)) {
+                                noteTags.add(n);
+                            }
+
                         }
+                    }
+                    else{
+                        int p = getLayoutPosition();
+                        itemView.setBackgroundColor(Color.parseColor("#339988"));
+                        count--;
+                        getNoteByTag = tagModels.get(p);
+                        for (NoteModel n : notes) {
+                            if (n.getTag().equals(getNoteByTag)) {
+                                noteTags.remove(n);
+                            }
+
+                        }
+
                     }
                     StaggeredGridLayoutManager staggeredGridLayoutManager;
                     staggeredGridLayoutManager = new StaggeredGridLayoutManager(2,

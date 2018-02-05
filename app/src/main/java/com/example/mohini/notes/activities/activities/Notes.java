@@ -3,11 +3,14 @@ package com.example.mohini.notes.activities.activities;
 
 import android.annotation.SuppressLint;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -43,8 +46,10 @@ import com.example.mohini.notes.activities.adapter.NoteAdapter;
 import com.example.mohini.notes.activities.adapter.TagAdapter;
 import com.example.mohini.notes.activities.fragment.AddNoteFragment;
 import com.example.mohini.notes.activities.interfaces.ApiInterface;
+import com.example.mohini.notes.activities.model.LoginUserDetails;
 import com.example.mohini.notes.activities.model.NoteModel;
 import com.example.mohini.notes.activities.model.SharedNotes;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -238,9 +243,9 @@ public class Notes extends AppCompatActivity
         recyclerView.setAdapter(adapter);
         tagRecyclerView.setAdapter(tagAdapter);
         } else if (response.code() == 500) {
-         Toast.makeText(getApplicationContext(), "Server error occured", Toast.LENGTH_SHORT).show();
+         Toast.makeText(getApplicationContext(), R.string.ServerError, Toast.LENGTH_SHORT).show();
          } else if (response.code() == 404) {
-         Toast.makeText(getApplicationContext(), "Notes not found", Toast.LENGTH_SHORT).show();
+         Toast.makeText(getApplicationContext(), R.string.RequestNotFound, Toast.LENGTH_SHORT).show();
           }
 
            }
@@ -264,14 +269,14 @@ public class Notes extends AppCompatActivity
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         menu.setHeaderTitle("Options :");
-        menu.add(0, v.getId(), 0, "Unpin from Top");
+        menu.add(0, v.getId(), 0, "Unpin from top");
         menu.add(0, v.getId(), 0, "Cancel");
     }
     //In case any option is selected from Context menu.
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         //unpins the note from top.
-        if (item.getTitle() == "Unpin from Top") {
+        if (item.getTitle()=="Unpin from top") {
             pinned = this.getSharedPreferences("pinned", 0); // 0 - for private mode
             SharedPreferences.Editor editor = pinned.edit();
             editor.putBoolean("isPinned", false);
@@ -280,7 +285,7 @@ public class Notes extends AppCompatActivity
             params.height = 0;
             pinnedNoteLayout.setLayoutParams(params);
         }
-        else if(item.getTitle()=="Cancel")
+        else if(item.getTitle().equals(R.string.cancel))
         {
             return false;
         }
@@ -347,12 +352,6 @@ public class Notes extends AppCompatActivity
 
         if (id == R.id.logout) {
             isShared = 0;
-            login = false;
-            //putting login value as false.
-            LoginActivity.pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
-            SharedPreferences.Editor editor = LoginActivity.pref.edit();
-            editor.putBoolean("login", login);
-            editor.commit();
             showLogoutDialog();
 
         }
@@ -480,6 +479,9 @@ public void showLogoutDialog()
                     // current activityLoginActivity obj=new LoginActivity();
                     LoginActivity obj=new LoginActivity();
                     obj.signOut();
+                    //deleting login record from database.
+                    SQLite.delete().from(LoginUserDetails.class).query();
+                    LoginActivity.loggedIn = 0;
                     Intent intent=new Intent(Notes.this,LoginActivity.class);
                     startActivity(intent);
                     Toast.makeText(Notes.this, "You have successfully logged Out", Toast.LENGTH_SHORT).show();
@@ -500,5 +502,17 @@ public void showLogoutDialog()
 
 
 }
+    //checks if internet is available or not.
+    public static boolean isInternetAvailable(Context context) {
+        try {
+            ConnectivityManager connectivityManager
+                    = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+            return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+        } catch (Exception e) {
+            Log.e("SEVERE", "internet_check", e);
+            return true;
+        }
+    }
 
 }

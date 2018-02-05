@@ -33,9 +33,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.JsonObject;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Interceptor;
@@ -59,6 +62,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public GoogleSignInAccount acct;
     public static SharedPreferences pref;
     public static boolean login = false;
+    public static int loggedIn = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,14 +90,21 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
-        //checks if user is already loggedin and perform suitable action.
-        try {
-            pref = getApplicationContext().getSharedPreferences("MyPref", 0);
-            if (pref.getBoolean("login", false) == true) {
+//        //checks if user is already loggedin and perform suitable action.
+//        try {
+//            pref = getApplicationContext().getSharedPreferences("MyPref", 0);
+//            if (pref.getBoolean("login", false) == true) {
+//                signIn();
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        //checks database is user is already logged in or not.
+        List<LoginUserDetails> user = SQLite.select().from(LoginUserDetails.class).queryList();
+        if (user.size() != 0) {
+            LoginUserDetails users = user.get(0);
+            if (users.getEmail() != null)
                 signIn();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
     }
@@ -135,13 +146,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             email = acct.getEmail();
             pic = acct.getPhotoUrl().toString();
             token= acct.getId();
+
             mProgressDialog = ProgressDialog.show(this, "Signing in  " + email, "Signing in...");
             //putting data in SharedPreferences.
-            pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
-            SharedPreferences.Editor editor = pref.edit();
-            login = true;
-            editor.putBoolean("login", login);
-            editor.commit();
+//            pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
+//            SharedPreferences.Editor editor = pref.edit();
+//            login = true;
+//            editor.putBoolean("login", login);
+//            editor.commit();
 
 
             //HttpCLient to Add Authorization Header.
@@ -159,9 +171,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
             ApiInterface apiService = retrofit.create(ApiInterface.class);
             try {
+                //initializing User constructor to send data to server.
+                LoginUserDetails user = new LoginUserDetails(email, token);
+                user.save();
                 LoginUserDetails loggedinuser = new LoginUserDetails(email,token);
-                loggedinuser.setEmail(email);
-                loggedinuser.setToken(token);
+                //loggedinuser.setEmail(email);
+                //loggedinuser.setToken(token);
                 apiService.loginUser(loggedinuser).enqueue(new Callback<LoginUserDetails>() {
                     @Override
                     public void onResponse(Call<LoginUserDetails> call, Response<LoginUserDetails> response) {
@@ -170,17 +185,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             mProgressDialog.dismiss();
                             LoginUserDetails user = response.body();
                             serverToken = user.getToken();
-                            Toast.makeText(getApplicationContext(), "Login Successful..!! ", Toast.LENGTH_SHORT).show();
+                            loggedIn = 1;
+                            Toast.makeText(getApplicationContext(), R.string.LoginMessage, Toast.LENGTH_SHORT).show();
                             Intent main = new Intent(LoginActivity.this, Notes.class);
                             startActivity(main);
                             finish();
 
                         } else if (response.code() == 500) {
                             mProgressDialog.dismiss();
-                            Toast.makeText(getApplicationContext(), "Some Error occured", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), R.string.ServerError, Toast.LENGTH_SHORT).show();
                         } else if (response.code() == 404) {
                             mProgressDialog.dismiss();
-                            Toast.makeText(getApplicationContext(), "Wrong Email or Password..", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), R.string.RequestNotFound, Toast.LENGTH_SHORT).show();
                         }
                     }
 

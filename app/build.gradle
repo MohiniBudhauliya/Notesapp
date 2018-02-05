@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+def dbflow_version = "4.1.2"
 
 android {
     compileSdkVersion 26
@@ -36,5 +37,25 @@ dependencies {
     compile 'com.google.code.gson:gson:2.6.2'
     compile 'com.squareup.retrofit2:retrofit:2.0.2'
     compile 'com.squareup.retrofit2:converter-gson:2.0.2'
+
+    implementation 'com.google.firebase:firebase-database:11.6.0'
+    implementation 'com.google.firebase:firebase-messaging:11.6.0'
+    //if Java use this. If using Kotlin do NOT use this.
+    annotationProcessor "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
+
+
+    compile "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
+    compile "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
+
+    // sql-cipher database encryption (optional)
+    compile "com.github.Raizlabs.DBFlow:dbflow-sqlcipher:${dbflow_version}"
+
+    // RXJava 1 support
+    compile "com.github.Raizlabs.DBFlow:dbflow-rx:${dbflow_version}"
+
+    // RXJava 2 support
+    compile "com.github.Raizlabs.DBFlow:dbflow-rx2:${dbflow_version}"
+
+    compile 'com.jakewharton.timber:timber:3.1.0'
 }
 apply plugin: 'com.google.gms.google-services'
